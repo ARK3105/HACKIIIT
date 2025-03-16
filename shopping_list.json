@@ -1,0 +1,16 @@
+[
+    {
+      "user_id": "U001",
+      "items": [
+        {"item_id": "I002", "name": "Eggs", "quantity": 12, "store": "Walmart"},
+        {"item_id": "I003", "name": "Bread", "quantity": 1, "store": "Walmart"}
+      ]
+    },
+    {
+      "user_id": "U002",
+      "items": [
+        {"item_id": "I003", "name": "Bread", "quantity": 2, "store": "Walmart"},
+        {"item_id": "I001", "name": "Milk", "quantity": 1, "store": "Walmart"}
+      ]
+    }
+  ]

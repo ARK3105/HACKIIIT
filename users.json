@@ -1,0 +1,32 @@
+[
+        {
+          "user_id": "U001",
+          "name": "John Doe",
+          "email": "johndoe@example.com",
+          "preferences": {
+            "diet": "vegetarian",
+            "allergies": ["nuts"],
+            "budget": 200
+          }
+        },
+        {
+          "user_id": "U002",
+          "name": "Jane Smith",
+          "email": "janesmith@example.com",
+          "preferences": {
+            "diet": "vegan",
+            "allergies": ["gluten"],
+            "budget": 150
+          }
+        },
+        {
+          "user_id": "U003",
+          "name": "Alice Brown",
+          "email": "alicebrown@example.com",
+          "preferences": {
+            "diet": "keto",
+            "allergies": [],
+            "budget": 250
+          }
+        }
+      ]

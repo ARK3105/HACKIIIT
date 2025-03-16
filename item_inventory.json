@@ -1,0 +1,102 @@
+[
+  {
+    "item_id": "I001",
+    "name": "Milk",
+    "category": "Dairy",
+    "expiry_date": "2025-04-01",
+    "quantity": 10,
+    "unit": "liters",
+    "store": "Walmart",
+    "price": 3.5
+  },
+  {
+    "item_id": "I002",
+    "name": "Eggs",
+    "category": "Poultry",
+    "expiry_date": "2025-03-15",
+    "quantity": 50,
+    "unit": "dozen",
+    "store": "Walmart",
+    "price": 5.0
+  },
+  {
+    "item_id": "I003",
+    "name": "Bread",
+    "category": "Bakery",
+    "expiry_date": "2025-03-22",
+    "quantity": 30,
+    "unit": "loaves",
+    "store": "Walmart",
+    "price": 2.0
+  },
+  {
+    "item_id": "I004",
+    "name": "Chicken Breast",
+    "category": "Meat",
+    "expiry_date": "2025-03-20",
+    "quantity": 20,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 8.0
+  },
+  {
+    "item_id": "I005",
+    "name": "Apples",
+    "category": "Fruits",
+    "expiry_date": "2025-03-21",
+    "quantity": 50,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 4.5
+  },
+  {
+    "item_id": "I006",
+    "name": "Rice",
+    "category": "Grains",
+    "expiry_date": "2025-03-17",
+    "quantity": 100,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 2.5
+  },
+  {
+    "item_id": "I007",
+    "name": "Yogurt",
+    "category": "Dairy",
+    "expiry_date": "2025-03-25",
+    "quantity": 20,
+    "unit": "liters",
+    "store": "Walmart",
+    "price": 3.0
+  },
+  {
+    "item_id": "I008",
+    "name": "Carrots",
+    "category": "Vegetables",
+    "expiry_date": "2025-04-05",
+    "quantity": 30,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 2.0
+  },
+  {
+    "item_id": "I009",
+    "name": "Pasta",
+    "category": "Grains",
+    "expiry_date": "2026-02-01",
+    "quantity": 50,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 3.5
+  },
+  {
+    "item_id": "I010",
+    "name": "Cheese",
+    "category": "Dairy",
+    "expiry_date": "2025-04-20",
+    "quantity": 15,
+    "unit": "kilograms",
+    "store": "Walmart",
+    "price": 6.0
+  }
+]

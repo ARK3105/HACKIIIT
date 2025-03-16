@@ -1,0 +1,25 @@
+ [
+    {
+      "recipe_id": "R001",
+      "name": "Pancakes",
+      "ingredients": [
+        {"item_id": "I002", "name": "Eggs", "quantity": 2},
+        {"item_id": "I004", "name": "Flour", "quantity": "200g"},
+        {"item_id": "I005", "name": "Milk", "quantity": "250ml"}
+      ],
+      "steps": ["Mix ingredients", "Cook on pan"]
+    },
+    {
+      "recipe_id": "R002",
+      "name": "French Toast",
+      "ingredients": [
+        {"item_id": "I002", "name": "Eggs", "quantity": 2},
+        {"item_id": "I003", "name": "Bread", "quantity": 2},
+        {"item_id": "I005", "name": "Milk", "quantity": "100ml"}
+      ],
+      "steps": ["Whisk eggs and milk", "Dip bread", "Fry until golden brown"]
+    }
+  ]
+
+
+  

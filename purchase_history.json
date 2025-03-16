@@ -1,0 +1,16 @@
+[
+    {
+      "user_id": "U001",
+      "purchases": [
+        {"item_id": "I001", "quantity": 2, "date": "2025-03-10", "store": "Walmart"},
+        {"item_id": "I003", "quantity": 1, "date": "2025-03-12", "store": "Walmart"}
+      ]
+    },
+    {
+      "user_id": "U002",
+      "purchases": [
+        {"item_id": "I003", "quantity": 2, "date": "2025-03-15", "store": "Walmart"},
+        {"item_id": "I001", "quantity": 1, "date": "2025-03-18", "store": "Walmart"}
+      ]
+    }
+  ]
