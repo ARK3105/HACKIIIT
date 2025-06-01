@@ -906,323 +906,6 @@ def get_user_preferences_tool(user_id: str) -> str:
 
 ##------------------------------------------------MEALS.py---------------------------------------------------------------##
 
-def setup_freshness_monitor_agent():
-    """
-    Set up the AzureOpenAI agent with memory capabilities and return the orchestrator and agent.
-    
-    Returns:
-        tuple: A tuple containing the orchestrator and the agent.
-    """
-    # Set up memory components
-    tool_registry = ToolRegistry()
-    EphemeralMemory.configure_memory_tools(tool_registry)
-    
-    # Register freshness monitoring tools
-    expiring_items_tool = BaseTool(
-        name="get_expiring_items_tool",
-        description="Tool to fetch items that will expire within the specified number of days",
-        function=get_expiring_items_tool,
-        parameters={
-            "days_threshold": {
-                "type": "integer",
-                "description": "Number of days to look ahead for expiring items (default: 7)"
-            }
-        },
-        required=[]  # Make days_threshold optional
-    )
-    tool_registry.register_tool(expiring_items_tool)
-    
-    expired_items_tool = BaseTool(
-        name="get_expired_items_tool",
-        description="Tool to fetch items that have already expired",
-        function=get_expired_items_tool,
-        parameters={},
-        required=[]
-    )
-    tool_registry.register_tool(expired_items_tool)
-    
-    update_expiry_tool = BaseTool(
-        name="update_expiry_date_tool",
-        description="Tool to update the expiry date for a specific item",
-        function=update_expiry_date_tool,
-        parameters={
-            "item_id": {
-                "type": "string",
-                "description": "ID of the item to update"
-            },
-            "new_expiry_date": {
-                "type": "string",
-                "description": "New expiry date in YYYY-MM-DD format"
-            }
-        },
-        required=["item_id", "new_expiry_date"]
-    )
-    tool_registry.register_tool(update_expiry_tool)
-    
-    recommendations_tool = BaseTool(
-        name="get_usage_recommendations_tool",
-        description="Tool to generate recommendations for items that should be used soon",
-        function=get_usage_recommendations_tool,
-        parameters={
-            "user_id": {
-                "type": "string",
-                "description": "ID of the user to generate recommendations for"
-            }
-        },
-        required=["user_id"]
-    )
-    tool_registry.register_tool(recommendations_tool)
-    
-    
-    
-    
-    # Create agent configuration
-    agent_config = AzureOpenAIAgentConfig(
-        agent_name="freshness_monitoring_agent",
-        description="An agent that monitors expiry dates and recommends actions to prevent food waste",
-        model_name="gpt-4o",
-        agent_type="FreshnessMonitoringAgent",
-        tool_registry=tool_registry,
-        system_prompt="""
-            You are an Expiration & Freshness Monitoring Agent, focused on helping users prevent food waste.
-            Your primary responsibilities include:
-            1. Tracking expiry dates of perishable items
-            2. Alerting users about items that are about to expire
-            3. Recommending recipes or usage ideas for ingredients that need to be used soon
-            4. Helping users update expiry dates when they check their inventory
-            5. Providing daily reports on expiring items for each user
-            6. Sending notifications to users about expiring items
-            7. Generating meal suggestions based on expiring items
-    
-            
-            You have access to tools that help you retrieve information about expiring items and
-            generate recommendations. Always provide actionable advice to help users minimize food waste.
-            
-            When users ask about their inventory, first check for expired items, then check for
-            items expiring soon, and finally provide usage recommendations when appropriate.
-            
-            Store conversation context in memory to provide personalized recommendations.
-        """,
-        api_key=os.getenv("AZURE_OPENAI_API_KEY","none"),
-        api_base=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION") or "2024-12-01-preview",
-        organization=None
-    )
-    
-    # Create Azure OpenAI agent with memory capabilities
-    agent = AzureOpenAIAgent(
-        config=agent_config
-    )
-    
-    # Set up registry and orchestrator
-    agent_registry = AgentRegistry()
-    agent_registry.register_agent(agent)
-    orchestrator = SimpleOrchestrator(
-        agent_registry=agent_registry,
-        default_agent_name="freshness_monitoring_agent"
-    )
-    
-    return orchestrator, agent
-
-
-def setup_recipe_planning_agent():
-    """
-    Set up the AzureOpenAI agent with memory capabilities and return the orchestrator and agent.
-    
-    Returns:
-        tuple: A tuple containing the orchestrator and the agent.
-    """
-    # Set up memory components
-    tool_registry = ToolRegistry()
-    EphemeralMemory.configure_memory_tools(tool_registry)
-    
-    # Register recipe planning tools
-    recipes_tool = BaseTool(
-        name="find_recipes_tool",
-        description="Find recipes that can be made with available ingredients",
-        function=find_recipes_tool,
-        parameters={
-            "match_threshold": {
-                "type": "number",
-                "description": "Minimum fraction of recipe ingredients that must be available (default: 0.7)"
-            }
-        },
-        required=[]  # Make match_threshold optional
-    )
-    tool_registry.register_tool(recipes_tool)
-    
-    recipe_details_tool = BaseTool(
-        name="get_recipe_details_tool",
-        description="Get detailed information about a specific recipe",
-        function=get_recipe_details_tool,
-        parameters={
-            "recipe_id": {
-                "type": "string",
-                "description": "ID of the recipe to retrieve"
-            }
-        },
-        required=["recipe_id"]
-    )
-    tool_registry.register_tool(recipe_details_tool)
-    
-    add_recipe_tool_obj = BaseTool(
-        name="add_recipe_tool",
-        description="Add a new recipe to the collection",
-        function=add_recipe_tool,
-        parameters={
-            "recipe_json": {
-                "type": "string",
-                "description": "JSON string containing recipe data"
-            }
-        },
-        required=["recipe_json"]
-    )
-    tool_registry.register_tool(add_recipe_tool_obj)
-    
-    meal_plan_tool = BaseTool(
-        name="generate_meal_plan_tool",
-        description="Generate a meal plan for the specified number of days",
-        function=generate_meal_plan_tool,
-        parameters={
-            "user_id": {
-                "type": "string",
-                "description": "ID of the user"
-            },
-            "days": {
-                "type": "integer",
-                "description": "Number of days to plan for (default: 7)"
-            }
-        },
-        required=["user_id"]  # Make days optional
-    )
-    tool_registry.register_tool(meal_plan_tool)
-    
-    ingredients_tool = BaseTool(
-        name="get_available_ingredients_tool",
-        description="List all available ingredients in the inventory",
-        function=get_available_ingredients_tool,
-        parameters={},
-        required=[]
-    )
-    tool_registry.register_tool(ingredients_tool)
-    
-    preferences_tool = BaseTool(
-        name="get_user_preferences_tool",
-        description="Get user preferences for recipe recommendations",
-        function=get_user_preferences_tool,
-        parameters={
-            "user_id": {
-                "type": "string",
-                "description": "ID of the user"
-            }
-        },
-        required=["user_id"]
-    )
-    tool_registry.register_tool(preferences_tool)
-    
-    # Create agent configuration
-    agent_config = AzureOpenAIAgentConfig(
-        agent_name="recipe_planning_agent",
-        description="An agent that suggests meal ideas based on available ingredients",
-        model_name="gpt-4o",
-        agent_type="RecipePlanningAgent",
-        tool_registry=tool_registry,
-        system_prompt="""
-            You are a Recipe & Meal Planning Agent, focused on helping users plan meals without extra shopping trips.
-            Your primary responsibilities include:
-            1. Suggesting recipes based on available ingredients in the user's inventory
-            2. Creating customized meal plans that maximize the use of available ingredients
-            3. Considering user preferences, dietary restrictions, and allergies
-            4. Providing detailed recipe instructions and information
-            5. Helping users make the most of ingredients before they expire
-            6. Minimizing food waste by suggesting recipes for soon-to-expire items
-            7. Organizing meals efficiently throughout the week
-            
-            You have access to tools that help you find recipes, generate meal plans, and view available ingredients.
-            Always provide practical and actionable meal planning advice.
-            
-            When users ask about meal ideas, first check their available ingredients, then consider their preferences,
-            and finally suggest recipes or meal plans that make the best use of what they have.
-            
-            Store conversation context in memory to provide personalized recommendations.
-        """,
-        api_key=os.getenv("AZURE_OPENAI_API_KEY","none"),
-        api_base=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION") or "2024-12-01-preview",
-        organization=None
-    )
-    
-    # Create Azure OpenAI agent with memory capabilities
-    agent = AzureOpenAIAgent(
-        config=agent_config
-    )
-    
-    # Set up registry and orchestrator
-    agent_registry = AgentRegistry()
-    agent_registry.register_agent(agent)
-    orchestrator = SimpleOrchestrator(
-        agent_registry=agent_registry,
-        default_agent_name="recipe_planning_agent"
-    )
-    
-    return orchestrator, agent
-
-
-def main():
-    # Initialize data files
-    initialize_data_files()
-    orchestrator, agent = setup_freshness_monitor_agent()
-    orchestrator_recipes, agent_recipes = setup_recipe_planning_agent()
-    thread_id = "freshness_monitoring_001"
-    EphemeralMemory.store_message(
-        thread_id=thread_id, 
-        sender="system", 
-        content=f"Starting freshness monitoring session, thread ID = {thread_id}"
-    )
-    
-        # Uncomment these lines to enable scheduled features
-    # schedule_notifications()
-    batch_update_from_purchase_history()
-    print("Welcome to Freshness Monitoring Assistant! (Type 'quit' or 'exit' to end)")
-    print("I'll help you track expiry dates and prevent food waste.")
-    print("-" * 60)
-    
-    while True:
-        # Get user input
-        user_input = input("\nYou: ").strip()
-        
-        # Check for exit command
-        if user_input.lower() in ['quit', 'exit']:
-            print("\nGoodbye! Remember to check your expiring items regularly.")
-            break
-            
-        # Store user message
-        EphemeralMemory.store_message(thread_id=thread_id, sender="user", content=user_input)
-        
-        # Get conversation summary and enrich input
-        session_summary = EphemeralMemory.get_thread_summary(thread_id)
-        enriched_input = f"{session_summary}\nCurrent user message: {user_input}"
-        
-        # Print Assistant prompt
-        print("\nAssistant: ", end="", flush=True)
-        
-        # Define callback for streaming
-        def stream_callback(chunk):
-            print(chunk, end="", flush=True)
-            
-        # Get response using stream_callback
-        response = orchestrator.orchestrate(
-            thread_id=thread_id,
-            user_message=enriched_input,
-            stream_callback=stream_callback
-        )
-        
-        # Store assistant's response in memory
-        EphemeralMemory.store_message(thread_id=thread_id, sender="assistant", content=response)
-        
-        # Print newline after response
-        print()
-
 def setup_multi_agent_system():
     """
     Set up a multi-agent system with both freshness monitoring and recipe planning agents,
@@ -1480,14 +1163,14 @@ def setup_multi_agent_system():
     return orchestrator, freshness_agent, recipe_agent
 
 
-def main_2():
+def main():
     """
     Main function that initializes the multi-agent system and handles user interaction.
     This creates a unified interface where users can ask about both freshness monitoring
     and recipe planning, with automatic routing to the appropriate specialized agent.
     """
     
-    print("🍎 Initializing Smart Food Management System...")
+    print(" Initializing Smart Food Management System...")
     
     # === STEP 1: Initialize Data Files ===
     # Set up the backend data storage for ingredients, recipes, and expiry dates
@@ -1495,7 +1178,7 @@ def main_2():
     
     # === STEP 2: Set Up Multi-Agent System ===
     # This creates both specialized agents and the classifier-based orchestrator
-    print("🤖 Setting up AI agents...")
+    print(" Setting up AI agents...")
     orchestrator, freshness_agent, recipe_agent = setup_multi_agent_system()
     
     # === STEP 3: Initialize Conversation Thread ===
@@ -1509,7 +1192,7 @@ def main_2():
     
     # === STEP 4: Run Background Tasks ===
     # Update inventory from purchase history and set up scheduled tasks
-    print("📊 Updating inventory from purchase history...")
+    print(" Updating inventory from purchase history...")
     batch_update_from_purchase_history()
     
     # Uncomment to enable scheduled notifications:
@@ -1517,11 +1200,11 @@ def main_2():
     
     # === STEP 5: Welcome User ===
     print("\n" + "="*80)
-    print("🍽️  Welcome to Smart Food Management Assistant!")
+    print("  Welcome to Smart Food Management Assistant!")
     print("="*80)
     print("I can help you with two main things:")
-    print("  🥕 FRESHNESS MONITORING: Track expiry dates, get alerts, prevent waste")
-    print("  🍳 RECIPE PLANNING: Find recipes, create meal plans, use available ingredients")
+    print("   FRESHNESS MONITORING: Track expiry dates, get alerts, prevent waste")
+    print("   RECIPE PLANNING: Find recipes, create meal plans, use available ingredients")
     print("\nJust ask me naturally - I'll automatically understand what you need!")
     print("Examples:")
     print("  • 'What's expiring soon?'")
@@ -1535,11 +1218,11 @@ def main_2():
     while True:
         try:
             # Get user input
-            user_input = input("\n💬 You: ").strip()
+            user_input = input("\n You: ").strip()
             
             # Check for exit commands
             if user_input.lower() in ['quit', 'exit', 'bye', 'goodbye']:
-                print("\n👋 Goodbye! Remember to:")
+                print("\n   Goodbye! Remember to:")
                 print("   • Check your expiring items regularly")
                 print("   • Plan meals to use ingredients efficiently")
                 print("   • Minimize food waste and save money!")
@@ -1558,7 +1241,7 @@ def main_2():
             enriched_input = f"{session_summary}\nCurrent user message: {user_input}"
             
             # === STEP 9: Show Processing Indicator ===
-            print("\n🤖 Assistant: ", end="", flush=True)
+            print("\n Assistant: ", end="", flush=True)
             
             # === STEP 10: Define Streaming Callback ===
             def stream_callback(chunk):
@@ -1579,15 +1262,15 @@ def main_2():
             print()
             
         except KeyboardInterrupt:
-            print("\n\n⚠️  Interrupted by user. Exiting...")
+            print("\n\n  Interrupted by user. Exiting...")
             break
         except Exception as e:
-            print(f"\n❌ An error occurred: {str(e)}")
+            print(f"\n An error occurred: {str(e)}")
             print("Please try again or type 'quit' to exit.")
             
 
 if __name__ == "__main__":
-    main_2()
+    main()
     
     
     
