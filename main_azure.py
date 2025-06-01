@@ -211,22 +211,22 @@ class FreshnessMonitor:
 def initialize_data_files():
     """Ensure all required data files exist with proper initial structure"""
     # Initialize inventory file
-    if not os.path.exists("item_inventory.json"):
+    if not os.path.exists("dataset/item_inventory.json"):
         with open("item_inventory.json", "w") as f:
             json.dump([], f)
             
     # Initialize recipe file
-    if not os.path.exists("recipe_planning.json"):
+    if not os.path.exists("dataset/recipe_planning.json"):
         with open("recipe_planning.json", "w") as f:
             json.dump([], f)
             
     # Initialize users file
-    if not os.path.exists("users.json"):
+    if not os.path.exists("dataset/users.json"):
         with open("users.json", "w") as f:
             json.dump([], f)
             
     # Initialize purchase history file
-    if not os.path.exists("purchase_history.json"):
+    if not os.path.exists("dataset/purchase_history.json"):
         with open("purchase_history.json", "w") as f:
             json.dump([], f)
 
